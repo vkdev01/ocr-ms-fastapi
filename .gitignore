@@ -1,9 +1,9 @@
 .DS_Store
 
-bin/ 
+bin/
 include/
 venv/
 
 __pycache__
 *.py
-*.pyc 
+*.pyc
