@@ -8,7 +8,8 @@ from fastapi import (
 	Depends,
 	File,
 	UploadFile,
-	HTTPException
+	HTTPException,
+	Header
 	)
 
 # for return html responses
@@ -30,6 +31,9 @@ import uuid
 class Settings(BaseSettings):
 	debug: bool = False
 	echo_active: bool = False
+	app_auth_token: str
+	app_auth_token_prod: str = None
+	skip_auth: bool = False
 
 	class Config:
 		env_file = ".env"
@@ -39,9 +43,6 @@ def get_settings():
 	return Settings()
 
 DEBUG = get_settings().debug
-
-
-print(DEBUG)
 
 # app setup
 BASE_DIR = pathlib.Path(__file__).parent
@@ -99,8 +100,32 @@ async def img_echo_view(file: UploadFile = File(...), settings:Settings = Depend
 	return dest
 
 
+def verify_auth(authorization = Header(None), settings: Settings = Depends(get_settings)):
+	"""
+	Authorization : Bearer <token>
+	{"authorization" : "Bearer<token>"}
+	"""
+
+	if settings.debug and settings.skip_auth:
+		return
+
+	if authorization is None:
+		raise HTTPException(detail="Un-Authorized", status_code=401)
+
+	label, token = authorization.split()
+
+	if token != settings.app_auth_token:
+		raise HTTPException(detail="Un-Authorized", status_code=401)
+
+
+
+
 @app.post("/") # http_post
-async def prediction_view(file: UploadFile = File(...), settings:Settings = Depends(get_settings)):
+async def prediction_view(authorization = Header(None),
+		file: UploadFile = File(...),
+		settings:Settings = Depends(get_settings)):
+
+	verify_auth(authorization, settings)
 
 	# byte stream
 	bytes_str = io.BytesIO(await file.read())
