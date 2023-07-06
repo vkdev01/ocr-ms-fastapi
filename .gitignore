@@ -5,5 +5,4 @@ include/
 venv/
 
 __pycache__
-*.py
 *.pyc
