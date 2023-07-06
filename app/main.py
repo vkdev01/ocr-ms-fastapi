@@ -18,6 +18,7 @@ import pathlib
 
 # image verification
 from PIL import Image
+import pytesseract
 
 # Env Setup
 from pydantic import BaseSettings
@@ -49,7 +50,7 @@ UPLOAD_DIR = BASE_DIR / "uploads"
 app = FastAPI()
 templates = Jinja2Templates(directory=str(BASE_DIR/"templates"))
 
-@app.get("/", response_class=HTMLResponse) # http_get
+@app.get("/2", response_class=HTMLResponse) # http_get
 def home_view():
 	print(DEBUG)
 	return "<h1>Hello World</h1>"
@@ -66,7 +67,7 @@ def home_view(request : Request, settings:Settings = Depends(get_settings)):
 	}
 	return templates.TemplateResponse("home.html", params) # passing params is must
 
-@app.post("/") # http_post
+@app.post("/1") # http_post
 def home_view_post():
 	return {"hello":"world"}
 
@@ -96,3 +97,20 @@ async def img_echo_view(file: UploadFile = File(...), settings:Settings = Depend
 	img.save(dest)
 
 	return dest
+
+
+@app.post("/") # http_post
+async def prediction_view(file: UploadFile = File(...), settings:Settings = Depends(get_settings)):
+
+	# byte stream
+	bytes_str = io.BytesIO(await file.read())
+
+	try:
+		img = Image.open(bytes_str)
+	except:
+		raise HTTPException(detail="Invalid image", status_code=400)
+
+	preds = pytesseract.image_to_string(img)
+	predictions = [x for x in preds.split('\n')]
+
+	return {'result': predictions, 'original':preds}

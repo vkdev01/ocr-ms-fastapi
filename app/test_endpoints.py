@@ -16,7 +16,7 @@ r = requests.get()
 """
 
 def test_get_home():
-	response = client.get("/")
+	response = client.get("/1")
 	assert response.status_code == 200
 	assert "text/html" in response.headers['content-type']
 	assert response.text != "<p>random</p>"
@@ -24,11 +24,11 @@ def test_get_home():
 
 
 
-def test_post_home():
+def test_post_file_upload_error():
 	response = client.post("/")
-	assert response.status_code == 200
+	assert response.status_code == 422
+	print(response.status_code)
 	assert "application/json" in response.headers['content-type']
-	assert response.json() == {"hello" : "world"}
 
 
 
@@ -60,5 +60,28 @@ def test_echo_upload():
 			assert difference is None
 
 
-	time.sleep(5)
+	time.sleep(1)
 	shutil.rmtree(UPLOAD_DIR)
+
+
+def test_prediction():
+	sample_images_path = BASE_DIR / "images"
+
+	for path in sample_images_path.glob('*'):
+
+		try:
+			img = Image.open(path)
+		except:
+			img = None
+
+
+		response = client.post("/", files={'file' : open(path, 'rb')})
+
+
+		if img is None:
+			assert response.status_code == 400
+		else:
+			# returning a valid image
+			assert response.status_code == 200
+			data = response.json()
+			assert len(data.keys()) == 2
