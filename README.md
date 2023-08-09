@@ -10,7 +10,7 @@ pip install -r requirements.txt
 ## Starting a local server
 ```
 cd src
-uvicorn server:app --reload
+uvicorn app.main:app --reload
 ```
 
 
@@ -24,3 +24,19 @@ Here's a list of the packages we will use to accomplish this:
 - Gunicorn
 - Uvicorn
 - Requests
+
+------
+SET these values in .env
+
+
+```
+import secrets
+token = secrets.token_urlsafe(32)
+```
+put the generated token value in .env file
+
+DEBUG = 1
+ECHO_ACTIVE=1
+APP_AUTH_TOKEN=
+APP_AUTH_TOKEN_PROD=
+SKIP_AUTH = 0
