@@ -22,7 +22,7 @@ from PIL import Image
 import pytesseract
 
 # Env Setup
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from functools import lru_cache
 import io
 import pathlib

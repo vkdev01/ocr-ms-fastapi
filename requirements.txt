@@ -10,3 +10,5 @@ python-multipart
 aiofiles
 pillow
 pytesseract
+pydantic-settings
+httpx
